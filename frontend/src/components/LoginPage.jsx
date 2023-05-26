@@ -12,6 +12,15 @@ import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
 
+const validationSchema = Yup.object().shape({
+  username: Yup.string()
+    .typeError(i18n.t('required'))
+    .required(i18n.t('required')),
+  password: Yup.string()
+    .typeError(i18n.t('required'))
+    .required(i18n.t('required')),
+});
+
 const LoginPage = () => {
   const { t } = useTranslation();
   const auth = useAuth();
@@ -28,33 +37,26 @@ const LoginPage = () => {
       username: '',
       password: '',
     },
-    validationSchema: Yup.object({
-      username: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-      password: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-    }),
-
-    onSubmit: async (values) => {
-      setAuthFailed(false);
-      try {
-        const res = await axios.post(getRoutes.loginPath(), values);
-        localStorage.setItem('userId', JSON.stringify(res.data));
-        auth.logIn(res.data);
-        const { from } = location.state || { from: { pathname: '/' } };
-        navigate(from);
+    validationSchema: validationSchema,
+    onSubmit: async (values) => { 
+      setAuthFailed(false); 
+      try { 
+        const res = await axios.post(getRoutes.loginPath(), values); 
+        localStorage.setItem('userId', JSON.stringify(res.data)); 
+        auth.logIn(res.data); 
+        const { from } = location.state || { from: { pathname: '/' } }; 
+        navigate(from); 
       } catch (err) {
-        formik.setSubmitting(false);
-        if (err.isAxiosError && err.response.status === 401) {
-          setAuthFailed(true);
-          inputRef.current.select();
-          return;
+        formik.setSubmitting(false); 
+        if (err.isAxiosError && err.response.status === 401) { 
+          setAuthFailed(true); 
+          if (inputRef.current) { 
+            inputRef.current.select(); 
+            return;
+          }
         }
-        throw err;
       }
-    },
+    }
   });
 
   return (

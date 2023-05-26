@@ -22,7 +22,6 @@ import { useAuth } from '../hooks/hooks.js';
 
 const SignUp = () => {
   const [failedRegistration, setFailedRegistration] = useState(false);
-  const [submited, setSubmited] = useState(false);
   const { t } = useTranslation();
   const usernameRef = useRef(null);
   const navigate = useNavigate();
@@ -31,27 +30,23 @@ const SignUp = () => {
   useEffect(() => {
     usernameRef.current.focus();
   }, []);
-  const registrationValidation = yup.object().shape({
-    username: yup
-      .string()
+
+  const registrationValidation = Yup.object().shape({
+    username: Yup.string()
       .min(3, t('signUpPage.minUsernameLenght'))
       .max(20, t('signUpPage.maxUsernameLenght'))
       .trim()
       .typeError(t('required'))
       .required(t('required')),
-    password: yup
-      .string()
+    password: Yup.string()
       .trim()
       .min(6, t('signUpPage.minPasswordLenght'))
       .typeError(t('required'))
       .required(t('required')),
-    confirmPassword: yup
-      .string()
-      .test(
-        'confirmPassword',
-        t('signUpPage.confirmPassword'),
-        (password, context) => password === context.parent.password,
-      ),
+    confirmPassword: Yup.string().oneOf(
+      [Yup.ref('password')],
+      t('signUpPage.confirmPassword'),
+    ),
   });
 
   const formik = useFormik({
@@ -61,9 +56,9 @@ const SignUp = () => {
       confirmPassword: '',
     },
     validationSchema: registrationValidation,
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
       setFailedRegistration(false);
-      setSubmited(true);
+      setSubmitting(true);
       try {
         const { username, password } = values;
         const { data } = await axios.post(getRoutes.signupPath(), { username, password });
@@ -75,11 +70,11 @@ const SignUp = () => {
         if (err.response.status === 409) {
           setFailedRegistration(true);
           usernameRef.current.select();
+          setSubmitting(false);
           return;
         }
-        throw err;
       }
-      setSubmited(false);
+      setSubmitting(false);
     },
   });
 
@@ -107,7 +102,7 @@ const SignUp = () => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmiting}
                     isInvalid={
                       (formik.errors.username && formik.touched.username)
                       || failedRegistration
@@ -132,7 +127,7 @@ const SignUp = () => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmiting}
                     isInvalid={
                       (formik.errors.password && formik.touched.password)
                       || failedRegistration
@@ -155,7 +150,7 @@ const SignUp = () => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmiting}
                     isInvalid={
                       (formik.errors.confirmPassword
                         && formik.touched.confirmPassword)

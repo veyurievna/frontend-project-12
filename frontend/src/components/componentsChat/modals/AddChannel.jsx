@@ -44,15 +44,15 @@ const Add = ({ closeHandler }) => {
     onSubmit: async (values) => {
       const { name } = values;
       const cleanedName = leoProfanity.clean(name);
-      await chatApi.newChannel(cleanedName)
-        .then((id) => {
-          dispatch(setActualChannel(id));
-          closeHandler();
-          toast.success(t('toast.createChannel'));
-        })
-        .catch(() => {
-          toast.error(t('toast.dataLoadingError'));
-        });
+  
+      try {
+        const channelId = await chatApi.newChannel(cleanedName);
+        dispatch(setActualChannel(channelId));
+        closeHandler();
+        toast.success(t('toast.createChannel'));
+      } catch (e) {
+        toast.error(t('toast.dataLoadingError'));
+      }
     },
   });
 
