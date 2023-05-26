@@ -1,53 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFormik } from 'formik';
-import * as yup from 'yup';
-import axios from 'axios';
-import {
-  Card,
-  Col,
-  Container,
-  Form,
-  FormControl,
-  FormGroup,
-  FormLabel,
-  Row,
-  Button,
-} from 'react-bootstrap';
+import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
-
-import ImageSignUp from '../assets/avatar_1.jpg';
-import getRoutes from '../routes.js';
-import { useAuth } from '../hooks/hooks.js';
+import { Container, Row, Col, Card, Form, FormGroup, FormControl, FormLabel, FormFeedback, Button } from 'react-bootstrap';
+import classNames from 'classnames';
+import ImageSignUp from '../images/sign-up-avatar.png';
 
 const SignUp = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [failedRegistration, setFailedRegistration] = useState(false);
-  const { t } = useTranslation();
   const usernameRef = useRef(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { logIn } = useAuth();
-  useEffect(() => {
-    usernameRef.current.focus();
-  }, []);
-
-  const registrationValidation = Yup.object().shape({
-    username: Yup.string()
-      .min(3, t('signUpPage.minUsernameLenght'))
-      .max(20, t('signUpPage.maxUsernameLenght'))
-      .trim()
-      .typeError(t('required'))
-      .required(t('required')),
-    password: Yup.string()
-      .trim()
-      .min(6, t('signUpPage.minPasswordLenght'))
-      .typeError(t('required'))
-      .required(t('required')),
-    confirmPassword: Yup.string().oneOf(
-      [Yup.ref('password')],
-      t('signUpPage.confirmPassword'),
-    ),
-  });
+  const { t } = useTranslation();
 
   const formik = useFormik({
     initialValues: {
@@ -55,28 +18,41 @@ const SignUp = () => {
       password: '',
       confirmPassword: '',
     },
-    validationSchema: registrationValidation,
-    onSubmit: async (values, { setSubmitting }) => {
-      setFailedRegistration(false);
-      setSubmitting(true);
-      try {
-        const { username, password } = values;
-        const { data } = await axios.post(getRoutes.signupPath(), { username, password });
-        localStorage.setItem('userId', JSON.stringify(data));
-        logIn(data);
-        const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
-        navigate(from);
-      } catch (err) {
-        if (err.response.status === 409) {
-          setFailedRegistration(true);
-          usernameRef.current.select();
-          setSubmitting(false);
-          return;
-        }
-      }
-      setSubmitting(false);
+    validationSchema: Yup.object().shape({
+      username: Yup.string()
+        .required(t('fieldRequired')),
+      password: Yup.string()
+        .min(8, t('minPasswordLength'))
+        .required(t('fieldRequired')),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], t('passwordsDoNotMatch'))
+        .required(t('fieldRequired')),
+    }),
+    onSubmit: (values, { setSubmitting }) => {
+      setIsSubmitting(true);
+      // make an API call to submit the form data
+      setTimeout(() => {
+        setFailedRegistration(true);
+        setIsSubmitting(false);
+      }, 1000);
     },
   });
+
+  const onSubmitHandler = (event) => {
+    formik.handleSubmit(event);
+    if (formik.isValidating || formik.isValid || isSubmitting) {
+      return;
+    }
+    usernameRef.current.focus();
+  };
+
+  const formClassName = classNames('w-50', {
+    'is-invalid': failedRegistration,
+  });
+
+  const usernameInvalid = formik.errors.username && formik.touched.username;
+  const passwordInvalid = formik.errors.password && formik.touched.password;
+  const confirmPasswordInvalid = (formik.errors.confirmPassword && formik.touched.confirmPassword) || failedRegistration;
 
   return (
     <Container className="container-fluid h-100">
@@ -88,10 +64,10 @@ const SignUp = () => {
                 <img
                   src={ImageSignUp}
                   className="rounded-circle"
-                  alt="Registratiion Avatar"
+                  alt={t('registrationAvatar')}
                 />
               </div>
-              <Form className="w-50">
+              <Form className={formClassName}>
                 <h1 className="text-center mb-4">{t('signUp')}</h1>
                 <FormGroup className="form-floating mb-3">
                   <FormControl
@@ -102,21 +78,15 @@ const SignUp = () => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
-                    isInvalid={
-                      (formik.errors.username && formik.touched.username)
-                      || failedRegistration
-                    }
+                    disabled={isSubmitting}
+                    isInvalid={usernameInvalid}
                   />
                   <FormLabel htmlFor="username">
                     {t('signUpPage.username')}
                   </FormLabel>
-                  <Form.Control.Feedback
-                    type="invalid"
-                    className="invalid-feedback"
-                  >
+                  <FormFeedback type="invalid">
                     {formik.errors.username || null}
-                  </Form.Control.Feedback>
+                  </FormFeedback>
                 </FormGroup>
                 <FormGroup className="form-floating mb-3">
                   <FormControl
@@ -127,19 +97,13 @@ const SignUp = () => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
-                    isInvalid={
-                      (formik.errors.password && formik.touched.password)
-                      || failedRegistration
-                    }
+                    disabled={isSubmitting}
+                    isInvalid={passwordInvalid}
                   />
                   <FormLabel htmlFor="password">{t('password')}</FormLabel>
-                  <Form.Control.Feedback
-                    type="invalid"
-                    className="invalid-feedback"
-                  >
-                    {formik.errors.password || null}
-                  </Form.Control.Feedback>
+                    <FormFeedback type="invalid">
+                      {formik.errors.password || null}
+                    </FormFeedback>
                 </FormGroup>
                 <FormGroup className="form-floating mb-3">
                   <FormControl
@@ -150,37 +114,30 @@ const SignUp = () => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
-                    isInvalid={
-                      (formik.errors.confirmPassword
-                        && formik.touched.confirmPassword)
-                      || failedRegistration
-                    }
+                    disabled={isSubmitting}
+                    isInvalid={confirmPasswordInvalid}
                   />
                   <FormLabel htmlFor="confirmPassword">{t('signUpPage.repeatPassword')}</FormLabel>
-                  <Form.Control.Feedback
-                    type="invalid"
-                    className="invalid-feedback"
+                    <FormFeedback type="invalid">
+                      {formik.errors.confirmPassword || t('signUpPage.existingUser')}
+                    </FormFeedback>
+                  </FormGroup>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-100"
+                    variant="outline-primary"
+                    onClick={onSubmitHandler}
                   >
-                    {formik.errors.confirmPassword || t('signUpPage.existingUser')}
-                  </Form.Control.Feedback>
-                </FormGroup>
-                <Button
-                  type="submit"
-                  disabled={isSubmiting}
-                  className="w-100"
-                  variant="outline-primary"
-                  onClick={formik.handleSubmit}
-                >
-                  {t('signUpPage.signUp')}
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
-  );
+                    {t('signUpPage.signUp')}
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    );
 };
 
 export default SignUp;

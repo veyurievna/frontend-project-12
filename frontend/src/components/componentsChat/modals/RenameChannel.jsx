@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useFormik } from 'formik';
 import {
   Modal, FormGroup, FormControl, FormLabel, Button, Form,
@@ -11,42 +11,35 @@ import { toast } from 'react-toastify';
 
 import { useChatApi } from '../../../hooks/hooks.js';
 
-const validationChannelsSchema = (channels, text) => yup.object().shape({
-  name: yup
-    .string()
-    .trim()
-    .required(text('required'))
-    .min(3, text('min'))
-    .max(20, text('max'))
-    .notOneOf(channels, text('duplicate')),
-});
-
-const Rename = ({ closeHandler, changed }) => {
+const Rename = ({ closeHandler, channelId }) => {
   const { t } = useTranslation();
   const refContainer = useRef(null);
-  useEffect(() => {
-  if (refContainer.current) {
-    setTimeout(() => {
-      refContainer.current.select();
-    }, 1);
-  }
-  }, []);
   const chatApi = useChatApi();
 
   const allChannels = useSelector((state) => state.channelsInfo.channels);
   const channelsName = allChannels.map((channel) => channel.name);
-  const channel = allChannels.find(({ id }) => id === changed);
+  const channel = allChannels.find(({ id }) => id === channelId);
+
+  const validationChannelsSchema = yup.object().shape({
+    name: yup
+      .string()
+      .trim()
+      .required(t('required'))
+      .min(3, t('min'))
+      .max(20, t('max'))
+      .notOneOf(channelsName, t('duplicate')),
+  });
 
   const formik = useFormik({
     initialValues: {
       name: channel.name,
     },
-    validationSchema: validationChannelsSchema(channelsName, t),
+    validationSchema: validationChannelsSchema,
     onSubmit: async (values) => {
       const { name } = values;
       try {
         const cleanedName = leoProfanity.clean(name);
-        await chatApi.renameChannel({ name: cleanedName, id: changed });
+        await chatApi.renameChannel({ name: cleanedName, id: channelId });
         closeHandler();
         toast.info(t('toast.renamedChannel'));
       } catch (e) {
@@ -54,6 +47,11 @@ const Rename = ({ closeHandler, changed }) => {
       }
     },
   });
+
+  const handleCancel = () => {
+    closeHandler();
+  };
+
   return (
     <>
       <Modal.Header closeButton>
@@ -67,7 +65,6 @@ const Rename = ({ closeHandler, changed }) => {
               ref={refContainer}
               name="name"
               id="name"
-              required=""
               onChange={formik.handleChange}
               value={formik.values.name}
               isInvalid={!!formik.errors.name}
@@ -77,8 +74,8 @@ const Rename = ({ closeHandler, changed }) => {
               {formik.errors.name}
             </FormControl.Feedback>
             <Modal.Footer>
-              <Button variant="secondary" type="button" onClick={closeHandler}>{t('modals.cancelButton')}</Button>
-              <Button variant="primary" type="submit" onClick={formik.handleSubmit}>{t('modals.rename')}</Button>
+              <Button variant="secondary" type="button" onClick={handleCancel}>{t('modals.cancelButton')}</Button>
+              <Button variant="primary" type="submit">{t('modals.rename')}</Button>
             </Modal.Footer>
           </FormGroup>
         </Form>

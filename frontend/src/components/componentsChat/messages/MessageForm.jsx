@@ -15,6 +15,9 @@ const MessageForm = ({ activeChannel }) => {
   const messageRef = useRef(null);
   const { t } = useTranslation();
 
+  const validationSchema = yup.object().shape({
+    body: yup.string().trim().required(),
+  });
   const formik = useFormik({
     initialValues: {
       message: '',
@@ -27,6 +30,7 @@ const MessageForm = ({ activeChannel }) => {
         channelId: activeChannel.id,
         username: user.username,
       };
+      
       try {
         await chatApi.sendMessage(message);
         formik.resetForm();
