@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
 import { Container, Row, Col, Card, Form, FormGroup, FormControl, FormLabel, FormFeedback, Button } from 'react-bootstrap';
 import classNames from 'classnames';
-import ImageSignUp from '../images/sign-up-avatar.png';
+import ImageSignUp from '../assets/avatar_1.jpg';
 
 const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
