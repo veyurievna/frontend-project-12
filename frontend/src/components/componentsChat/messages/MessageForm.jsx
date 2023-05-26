@@ -15,19 +15,13 @@ const MessageForm = ({ activeChannel }) => {
   const messageRef = useRef(null);
   const { t } = useTranslation();
 
-  const validationSchema = yup.object().shape({
-    message: yup.string().trim().required('Required'),
-  });
-
-  useEffect(() => {
-    messageRef.current.focus();
-  }, []);
   const formik = useFormik({
     initialValues: {
-      body: '',
+      message: '',
     },
+    validationSchema,
     onSubmit: async (values) => {
-      const cleanedMessage = leoProfanity.clean(values.body);
+      const cleanedMessage = leoProfanity.clean(values.message);
       const message = {
         text: cleanedMessage,
         channelId: activeChannel.id,
@@ -40,7 +34,6 @@ const MessageForm = ({ activeChannel }) => {
         toast.error(t('toast.dataLoadingError'));
       }
     },
-    validateOnChange: validationSchema,
   });
 
   return (

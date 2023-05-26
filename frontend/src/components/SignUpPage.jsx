@@ -167,7 +167,7 @@ const SignUp = () => {
                 </FormGroup>
                 <Button
                   type="submit"
-                  disabled={submited}
+                  disabled={isSubmiting}
                   className="w-100"
                   variant="outline-primary"
                   onClick={formik.handleSubmit}
