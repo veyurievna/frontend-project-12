@@ -21,16 +21,18 @@ import getRoutes from '../routes.js';
 import { useAuth } from '../hooks/hooks.js';
 
 const SignUp = () => {
-  const [failedRegistration, setFailedRegistration] = useState(false);
-  const [submited, setSubmited] = useState(false);
   const { t } = useTranslation();
-  const usernameRef = useRef(null);
+  const { logIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { logIn } = useAuth();
+  const usernameRef = useRef(null);
+  const [failedRegistration, setFailedRegistration] = useState(false);
+  const [submited, setSubmited] = useState(false);
+
   useEffect(() => {
     usernameRef.current.focus();
   }, []);
+
   const registrationValidation = yup.object().shape({
     username: yup
       .string()
@@ -54,6 +56,27 @@ const SignUp = () => {
       ),
   });
 
+  const handleSubmit = async (values) => {
+    setFailedRegistration(false);
+    setSubmited(true);
+    try {
+      const { username, password } = values;
+      const { data } = await axios.post(getRoutes.signupPath(), { username, password });
+      localStorage.setItem('userId', JSON.stringify(data));
+      logIn(data);
+      const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
+      navigate(from);
+    } catch (err) {
+      if (err.response.status === 409) {
+        setFailedRegistration(true);
+        usernameRef.current.select();
+        return;
+      }
+      throw err;
+    }
+    setSubmited(false);
+  };
+
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -61,26 +84,7 @@ const SignUp = () => {
       confirmPassword: '',
     },
     validationSchema: registrationValidation,
-    onSubmit: async (values) => {
-      setFailedRegistration(false);
-      setSubmited(true);
-      try {
-        const { username, password } = values;
-        const { data } = await axios.post(getRoutes.signupPath(), { username, password });
-        localStorage.setItem('userId', JSON.stringify(data));
-        logIn(data);
-        const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
-        navigate(from);
-      } catch (err) {
-        if (err.response.status === 409) {
-          setFailedRegistration(true);
-          usernameRef.current.select();
-          return;
-        }
-        throw err;
-      }
-      setSubmited(false);
-    },
+    onSubmit: handleSubmit,
   });
 
   return (
