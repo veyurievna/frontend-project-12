@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
-import { loginValidationSchema } from './validationSchemas.js';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -20,24 +19,24 @@ const LoginPage = () => {
   const inputRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
-
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current.focus();
   }, []);
-
-  const validationSchema = Yup.object({
-    username: Yup.string().typeError(t('required')).required(t('required')),
-    password: Yup.string().typeError(t('required')).required(t('required')),
-  });
 
   const formik = useFormik({
     initialValues: {
       username: '',
       password: '',
     },
-    validationSchema: loginValidationSchema,
+    validationSchema: Yup.object({
+      username: Yup.string()
+        .typeError(t('required'))
+        .required(t('required')),
+      password: Yup.string()
+        .typeError(t('required'))
+        .required(t('required')),
+    }),
+
     onSubmit: async (values) => {
       setAuthFailed(false);
       try {
