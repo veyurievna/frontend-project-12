@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
+import { loginValidationSchema } from './validationSchemas.js';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ const LoginPage = () => {
       username: '',
       password: '',
     },
-    validationSchema,
+    validationSchema: loginValidationSchema,
     onSubmit: async (values) => {
       setAuthFailed(false);
       try {

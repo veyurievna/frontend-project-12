@@ -23,9 +23,9 @@ const signUpValidationSchema = yup.object().shape({
     ),
 });
 
-const loginValidationSchema = yup.object().shape({
-  username: yup.string().trim().typeError('Required').required('Required'),
-  password: yup.string().trim().typeError('Required').required('Required'),
+const loginValidationSchema = Yup.object({
+  username: Yup.string().typeError('Required').required('Required'),
+  password: Yup.string().typeError('Required').required('Required'),
 });
 
 export { signUpValidationSchema, loginValidationSchema };
