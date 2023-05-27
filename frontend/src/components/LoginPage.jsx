@@ -53,7 +53,7 @@ const LoginPage = () => {
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from);
       } catch (err) {
-        handleAuthError({ formik, setAuthFailed });
+        handleAuthError({ setAuthFailed });
       } finally {
         setSubmitting(false);
       }
