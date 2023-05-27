@@ -27,19 +27,18 @@ const MessageForm = ({ activeChannel }) => {
       body: '',
     },
     onSubmit: async (values) => {
-      const cleanedMessage = leoProfanity.clean(values.body);
-      const message = {
-        text: cleanedMessage,
-        channelId: activeChannel.id,
-        username: user.username,
-      };
-      await chatApi.sendMessage(message)
-        .then(() => {
-          formik.resetForm();
-        })
-        .catch(() => {
-          toast.error(t('toast.dataLoadingError'));
-        });
+      try {
+        const cleanedMessage = leoProfanity.clean(values.body);
+        const message = {
+          text: cleanedMessage,
+          channelId: activeChannel.id,
+          username: user.username,
+        };
+        await chatApi.sendMessage(message);
+        formik.resetForm();
+      } catch (err) {
+        toast.error(t('toast.dataLoadingError'));
+      }
     },
     validateOnChange: validationSchema,
   });

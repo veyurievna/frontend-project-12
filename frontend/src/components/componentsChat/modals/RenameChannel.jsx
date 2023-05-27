@@ -11,22 +11,12 @@ import { toast } from 'react-toastify';
 
 import { useChatApi } from '../../../hooks/hooks.js';
 
-const validationChannelsSchema = (channels, text) => yup.object().shape({
-  name: yup
-    .string()
-    .trim()
-    .required(text('required'))
-    .min(3, text('min'))
-    .max(20, text('max'))
-    .notOneOf(channels, text('duplicate')),
-});
-
 const Rename = ({ closeHandler, changed }) => {
   const { t } = useTranslation();
-  const refContainer = useRef('');
+  const refContainer = useRef(null);
   useEffect(() => {
     setTimeout(() => {
-      refContainer.current.select();
+      refContainer.current?.select();
     }, 1);
   }, []);
   const chatApi = useChatApi();
@@ -41,18 +31,18 @@ const Rename = ({ closeHandler, changed }) => {
     },
     validationSchema: validationChannelsSchema(channelsName, t),
     onSubmit: async (values) => {
-      const { name } = values;
-      const cleanedName = leoProfanity.clean(name);
-      await chatApi.renameChannel({ name: cleanedName, id: changed })
-        .then(() => {
-          closeHandler();
-          toast.info(t('toast.renamedChannel'));
-        })
-        .catch(() => {
-          toast.error(t('toast.dataLoadingError'));
-        });
+      try {
+        const { name } = values;
+        const cleanedName = leoProfanity.clean(name);
+        await chatApi.renameChannel({ name: cleanedName, id: changed });
+        closeHandler();
+        toast.info(t('toast.renamedChannel'));
+      } catch (err) {
+        toast.error(t('toast.dataLoadingError'));
+      }
     },
   });
+  
   return (
     <>
       <Modal.Header closeButton>
