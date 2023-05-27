@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
 
-const handleAuthError = ({ formik, setAuthFailed, inputRef }) => {
+const handleAuthError = ({ formik, setAuthFailed }) => {
   setAuthFailed(true);
 };
 
@@ -53,7 +53,7 @@ const LoginPage = () => {
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from);
       } catch (err) {
-        handleAuthError({ formik, setAuthFailed, inputRef });
+        handleAuthError({ formik, setAuthFailed });
       } finally {
         setSubmitting(false);
       }
