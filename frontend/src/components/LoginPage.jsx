@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
 
-const handleAuthError = ({ formik, setAuthFailed }) => {
+const handleAuthError = ({ setAuthFailed }) => {
   setAuthFailed(true);
 };
 
