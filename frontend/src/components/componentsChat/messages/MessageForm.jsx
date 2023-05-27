@@ -33,14 +33,15 @@ const MessageForm = ({ activeChannel }) => {
         channelId: activeChannel.id,
         username: user.username,
       };
-
-      try {
-        await chatApi.sendMessage(message);
-        formik.resetForm();
-      } catch {
-        toast.error(t('toast.dataLoadingError'));
-      }
-    }
+      await chatApi.sendMessage(message)
+        .then(() => {
+          formik.resetForm();
+        })
+        .catch(() => {
+          toast.error(t('toast.dataLoadingError'));
+        });
+    },
+    validateOnChange: validationSchema,
   });
 
   return (

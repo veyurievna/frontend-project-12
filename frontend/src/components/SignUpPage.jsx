@@ -22,7 +22,7 @@ import { useAuth } from '../hooks/hooks.js';
 
 const SignUp = () => {
   const [failedRegistration, setFailedRegistration] = useState(false);
-  const [isSubmitting, setSubmited] = useState(false);
+  const [submited, setSubmited] = useState(false);
   const { t } = useTranslation();
   const usernameRef = useRef(null);
   const navigate = useNavigate();
@@ -31,33 +31,28 @@ const SignUp = () => {
   useEffect(() => {
     usernameRef.current.focus();
   }, []);
-  const usernameValidation = yup
-  .string()
-  .min(3, t('signUpPage.minUsernameLenght'))
-  .max(20, t('signUpPage.maxUsernameLenght'))
-  .trim()
-  .typeError(t('required'))
-  .required(t('required'));
-  
-  const passwordValidation = yup
-  .string()
-  .trim()
-  .min(6, t('signUpPage.minPasswordLenght'))
-  .typeError(t('required'))
-  .required(t('required'));
-  
-  const confirmPasswordValidation = yup
-  .string()
-  .test(
-    'confirmPassword',
-    t('signUpPage.confirmPassword'),
-    (password, context) => password === context.parent.password,
-    );
-    const registrationValidation = yup.object().shape({
-      username: usernameValidation,
-      password: passwordValidation,
-      confirmPassword: confirmPasswordValidation,
-    });
+  const registrationValidation = yup.object().shape({
+    username: yup
+      .string()
+      .min(3, t('signUpPage.minUsernameLenght'))
+      .max(20, t('signUpPage.maxUsernameLenght'))
+      .trim()
+      .typeError(t('required'))
+      .required(t('required')),
+    password: yup
+      .string()
+      .trim()
+      .min(6, t('signUpPage.minPasswordLenght'))
+      .typeError(t('required'))
+      .required(t('required')),
+    confirmPassword: yup
+      .string()
+      .test(
+        'confirmPassword',
+        t('signUpPage.confirmPassword'),
+        (password, context) => password === context.parent.password,
+      ),
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -82,8 +77,9 @@ const SignUp = () => {
           usernameRef.current.select();
           return;
         }
+        throw err;
       }
-      isSubmitting(false);
+      setSubmited(false);
     },
   });
 
@@ -111,7 +107,7 @@ const SignUp = () => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.username && formik.touched.username)
                       || failedRegistration
@@ -136,7 +132,7 @@ const SignUp = () => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.password && formik.touched.password)
                       || failedRegistration
@@ -159,7 +155,7 @@ const SignUp = () => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.confirmPassword
                         && formik.touched.confirmPassword)
@@ -176,7 +172,7 @@ const SignUp = () => {
                 </FormGroup>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={submited}
                   className="w-100"
                   variant="outline-primary"
                   onClick={formik.handleSubmit}
