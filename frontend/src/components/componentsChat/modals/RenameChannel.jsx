@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFormik } from 'formik';
 import {
   Modal, FormGroup, FormControl, FormLabel, Button, Form,
@@ -11,47 +11,48 @@ import { toast } from 'react-toastify';
 
 import { useChatApi } from '../../../hooks/hooks.js';
 
-const Rename = ({ closeHandler, channelId }) => {
+const validationChannelsSchema = (channels, text) => yup.object().shape({
+  name: yup
+    .string()
+    .trim()
+    .required(text('required'))
+    .min(3, text('min'))
+    .max(20, text('max'))
+    .notOneOf(channels, text('duplicate')),
+});
+
+const Rename = ({ closeHandler, changed }) => {
   const { t } = useTranslation();
-  const refContainer = useRef(null);
+  const refContainer = useRef('');
+  useEffect(() => {
+    setTimeout(() => {
+      refContainer.current.select();
+    }, 1);
+  }, []);
   const chatApi = useChatApi();
 
   const allChannels = useSelector((state) => state.channelsInfo.channels);
   const channelsName = allChannels.map((channel) => channel.name);
-  const channel = allChannels.find(({ id }) => id === channelId);
-
-  const validationChannelsSchema = yup.object().shape({
-    name: yup
-      .string()
-      .trim()
-      .required(t('required'))
-      .min(3, t('min'))
-      .max(20, t('max'))
-      .notOneOf(channelsName, t('duplicate')),
-  });
+  const channel = allChannels.find(({ id }) => id === changed);
 
   const formik = useFormik({
     initialValues: {
       name: channel.name,
     },
-    validationSchema: validationChannelsSchema,
+    validationSchema: validationChannelsSchema(channelsName, t),
     onSubmit: async (values) => {
       const { name } = values;
-      try {
-        const cleanedName = leoProfanity.clean(name);
-        await chatApi.renameChannel({ name: cleanedName, id: channelId });
-        closeHandler();
-        toast.info(t('toast.renamedChannel'));
-      } catch (e) {
-        toast.error(t('toast.dataLoadingError'));
-      }
+      const cleanedName = leoProfanity.clean(name);
+      await chatApi.renameChannel({ name: cleanedName, id: changed })
+        .then(() => {
+          closeHandler();
+          toast.info(t('toast.renamedChannel'));
+        })
+        .catch(() => {
+          toast.error(t('toast.dataLoadingError'));
+        });
     },
   });
-
-  const handleCancel = () => {
-    closeHandler();
-  };
-
   return (
     <>
       <Modal.Header closeButton>
@@ -65,6 +66,7 @@ const Rename = ({ closeHandler, channelId }) => {
               ref={refContainer}
               name="name"
               id="name"
+              required=""
               onChange={formik.handleChange}
               value={formik.values.name}
               isInvalid={!!formik.errors.name}
@@ -74,8 +76,8 @@ const Rename = ({ closeHandler, channelId }) => {
               {formik.errors.name}
             </FormControl.Feedback>
             <Modal.Footer>
-              <Button variant="secondary" type="button" onClick={handleCancel}>{t('modals.cancelButton')}</Button>
-              <Button variant="primary" type="submit">{t('modals.rename')}</Button>
+              <Button variant="secondary" type="button" onClick={closeHandler}>{t('modals.cancelButton')}</Button>
+              <Button variant="primary" type="submit" onClick={formik.handleSubmit}>{t('modals.rename')}</Button>
             </Modal.Footer>
           </FormGroup>
         </Form>

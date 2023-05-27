@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
+import * as yup from 'yup';
 import axios from 'axios';
 import {
   Card,
@@ -21,6 +22,7 @@ import { useAuth } from '../hooks/hooks.js';
 
 const SignUp = () => {
   const [failedRegistration, setFailedRegistration] = useState(false);
+  const [submited, setSubmited] = useState(false);
   const { t } = useTranslation();
   const usernameRef = useRef(null);
   const navigate = useNavigate();
@@ -29,23 +31,27 @@ const SignUp = () => {
   useEffect(() => {
     usernameRef.current.focus();
   }, []);
-
-  const registrationValidation = Yup.object().shape({
-    username: Yup.string()
+  const registrationValidation = yup.object().shape({
+    username: yup
+      .string()
       .min(3, t('signUpPage.minUsernameLenght'))
       .max(20, t('signUpPage.maxUsernameLenght'))
       .trim()
       .typeError(t('required'))
       .required(t('required')),
-    password: Yup.string()
+    password: yup
+      .string()
       .trim()
       .min(6, t('signUpPage.minPasswordLenght'))
       .typeError(t('required'))
       .required(t('required')),
-    confirmPassword: Yup.string().oneOf(
-      [Yup.ref('password')],
-      t('signUpPage.confirmPassword'),
-    ),
+    confirmPassword: yup
+      .string()
+      .test(
+        'confirmPassword',
+        t('signUpPage.confirmPassword'),
+        (password, context) => password === context.parent.password,
+      ),
   });
 
   const formik = useFormik({
@@ -55,9 +61,9 @@ const SignUp = () => {
       confirmPassword: '',
     },
     validationSchema: registrationValidation,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values) => {
       setFailedRegistration(false);
-      setSubmitting(true);
+      setSubmited(true);
       try {
         const { username, password } = values;
         const { data } = await axios.post(getRoutes.signupPath(), { username, password });
@@ -69,11 +75,11 @@ const SignUp = () => {
         if (err.response.status === 409) {
           setFailedRegistration(true);
           usernameRef.current.select();
-          setSubmitting(false);
           return;
         }
+        throw err;
       }
-      setSubmitting(false);
+      setSubmited(false);
     },
   });
 
@@ -101,7 +107,7 @@ const SignUp = () => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.username && formik.touched.username)
                       || failedRegistration
@@ -126,7 +132,7 @@ const SignUp = () => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.password && formik.touched.password)
                       || failedRegistration
@@ -149,7 +155,7 @@ const SignUp = () => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmiting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.confirmPassword
                         && formik.touched.confirmPassword)

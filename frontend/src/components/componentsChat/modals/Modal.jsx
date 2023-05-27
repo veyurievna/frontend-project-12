@@ -17,16 +17,16 @@ const ChatModal = () => {
     dispatch(closeModal());
   };
 
-  const ActualModal = modalsWindow(type);
+  const ActyalModal = modalsWindow(type);
 
   return (
     <Modal show={isOpened} onHide={closeHandler} centered>
-      {ActualModal && (
-        <ActualModal
-          closeHandler={closeHandler}
-          changed={changed}
-          allChannels={allChannels}
-        />
+      {ActyalModal && (
+      <ActyalModal
+        closeHandler={closeHandler}
+        changed={changed}
+        allChannels={allChannels}
+      />
       )}
     </Modal>
   );

@@ -16,28 +16,32 @@ const MessageForm = ({ activeChannel }) => {
   const { t } = useTranslation();
 
   const validationSchema = yup.object().shape({
-    body: yup.string().trim().required(),
+    message: yup.string().trim().required('Required'),
   });
+
+  useEffect(() => {
+    messageRef.current.focus();
+  }, []);
   const formik = useFormik({
     initialValues: {
-      message: '',
+      body: '',
     },
-    validationSchema,
     onSubmit: async (values) => {
-      const cleanedMessage = leoProfanity.clean(values.message);
+      const cleanedMessage = leoProfanity.clean(values.body);
       const message = {
         text: cleanedMessage,
         channelId: activeChannel.id,
         username: user.username,
       };
-      
-      try {
-        await chatApi.sendMessage(message);
-        formik.resetForm();
-      } catch {
-        toast.error(t('toast.dataLoadingError'));
-      }
+      await chatApi.sendMessage(message)
+        .then(() => {
+          formik.resetForm();
+        })
+        .catch(() => {
+          toast.error(t('toast.dataLoadingError'));
+        });
     },
+    validateOnChange: validationSchema,
   });
 
   return (

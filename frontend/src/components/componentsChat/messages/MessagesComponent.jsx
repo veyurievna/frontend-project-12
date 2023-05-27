@@ -11,9 +11,9 @@ const MessagesComponent = () => {
   const currentChannelId = useSelector(
     (state) => state.channelsInfo.currentChannelId,
   );
-  const activeChannel = currentChannelId
-  ? channels.find((channel) => channel.id === currentChannelId)
-  : null;
+  const [activeChannel] = channels.filter(
+    ({ id }) => id === currentChannelId,
+  );
   const activeChannelMessages = messages.filter(
     (message) => message.channelId === currentChannelId,
   );
