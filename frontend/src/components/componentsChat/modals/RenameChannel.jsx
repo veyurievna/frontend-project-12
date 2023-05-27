@@ -25,12 +25,12 @@ const Rename = ({ closeHandler, changed }) => {
   const { t } = useTranslation();
   const refContainer = useRef({});
   useEffect(() => {
-  if (refContainer.current) {
-    setTimeout(() => {
-      refContainer.current.select();
-    }, 1);
-  }
-}, []);
+    if (refContainer.current) {
+      setTimeout(() => {
+        refContainer.current.select();
+      }, 1);
+    }
+  }, []);
   const chatApi = useChatApi();
 
   const allChannels = useSelector((state) => state.channelsInfo.channels);
