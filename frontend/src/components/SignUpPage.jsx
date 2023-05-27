@@ -27,7 +27,6 @@ const SignUp = () => {
   const location = useLocation();
   const usernameRef = useRef(null);
   const [failedRegistration, setFailedRegistration] = useState(false);
-  const [submited, setSubmited] = useState(false);
 
   useEffect(() => {
     usernameRef.current.focus();
@@ -56,9 +55,8 @@ const SignUp = () => {
       ),
   });
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     setFailedRegistration(false);
-    setSubmited(true);
     try {
       const { username, password } = values;
       const { data } = await axios.post(getRoutes.signupPath(), { username, password });
@@ -72,9 +70,8 @@ const SignUp = () => {
         usernameRef.current.select();
         return;
       }
-      throw err;
     }
-    setSubmited(false);
+    setSubmitting(false);
   };
 
   const formik = useFormik({
