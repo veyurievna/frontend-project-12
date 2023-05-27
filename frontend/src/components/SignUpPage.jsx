@@ -1,57 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import * as Yup from 'yup';
 import { useFormik } from 'formik';
-import * as yup from 'yup';
-import axios from 'axios';
 import {
-  Card,
-  Col,
   Container,
+  Row,
+  Col,
+  Card,
   Form,
-  FormControl,
   FormGroup,
   FormLabel,
-  Row,
+  FormControl,
   Button,
 } from 'react-bootstrap';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
 
-import ImageSignUp from '../assets/avatar_1.jpg';
-import getRoutes from '../routes.js';
-import { useAuth } from '../hooks/hooks.js';
+import { signUp } from '../../store/auth';
+import ImageSignUp from '../../assets/images/signup.png';
 
 const SignUp = () => {
+  const { t } = useTranslation();
   const [failedRegistration, setFailedRegistration] = useState(false);
   const [submited, setSubmited] = useState(false);
-  const { t } = useTranslation();
+  const history = useHistory();
+  const dispatch = useDispatch();
+
   const usernameRef = useRef(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { logIn } = useAuth();
-  useEffect(() => {
-    usernameRef.current.focus();
-  }, []);
-  const registrationValidation = yup.object().shape({
-    username: yup
-      .string()
-      .min(3, t('signUpPage.minUsernameLenght'))
-      .max(20, t('signUpPage.maxUsernameLenght'))
-      .trim()
-      .typeError(t('required'))
-      .required(t('required')),
-    password: yup
-      .string()
-      .trim()
-      .min(6, t('signUpPage.minPasswordLenght'))
-      .typeError(t('required'))
-      .required(t('required')),
-    confirmPassword: yup
-      .string()
-      .test(
-        'confirmPassword',
-        t('signUpPage.confirmPassword'),
-        (password, context) => password === context.parent.password,
-      ),
+
+  const validationSchema = Yup.object().shape({
+    username: Yup.string()
+      .required(t("validationMessages.required"))
+      .min(3, t("validationMessages.minLenght", { lenght: 3 })),
+    password: Yup.string()
+      .required(t("validationMessages.required"))
+      .min(6, t("validationMessages.minLenght", { lenght: 6 })),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('validationMessages.passwordsDoNotMatch'))
+      .required(t("validationMessages.required")),
   });
 
   const formik = useFormik({
@@ -60,26 +46,18 @@ const SignUp = () => {
       password: '',
       confirmPassword: '',
     },
-    validationSchema: registrationValidation,
+    validationSchema,
     onSubmit: async (values) => {
-      setFailedRegistration(false);
-      setSubmited(true);
       try {
-        const { username, password } = values;
-        const { data } = await axios.post(getRoutes.signupPath(), { username, password });
-        localStorage.setItem('userId', JSON.stringify(data));
-        logIn(data);
-        const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
-        navigate(from);
-      } catch (err) {
-        if (err.response.status === 409) {
-          setFailedRegistration(true);
-          usernameRef.current.select();
-          return;
-        }
-        throw err;
+        setSubmited(true);
+        await dispatch(signUp(values.username, values.password));
+        setSubmited(false);
+        history.push('/');
+      } catch (error) {
+        setFailedRegistration(true);
+        setSubmited(false);
+        usernameRef.current.focus();
       }
-      setSubmited(false);
     },
   });
 
