@@ -19,6 +19,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import ImageSignUp from '../assets/avatar_1.jpg';
 import getRoutes from '../routes.js';
 import { useAuth } from '../hooks/hooks.js';
+import { signUpValidationSchema } from '../components/i18n/validationSchemas.js';
 
 const SignUp = () => {
   const [failedRegistration, setFailedRegistration] = useState(false);
@@ -60,7 +61,7 @@ const SignUp = () => {
       password: '',
       confirmPassword: '',
     },
-    validationSchema: registrationValidation,
+    validationSchema: signUpValidationSchema,
     onSubmit: async (values) => {
       setFailedRegistration(false);
       setSubmited(true);
