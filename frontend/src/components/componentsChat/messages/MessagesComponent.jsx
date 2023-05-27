@@ -11,16 +11,12 @@ const MessagesComponent = () => {
   const currentChannelId = useSelector(
     (state) => state.channelsInfo.currentChannelId,
   );
-  const [activeChannel] = channels.find(
+  const [activeChannel] = channels.filter(
     ({ id }) => id === currentChannelId,
   );
-  if (!activeChannel) {
-    return null;
-  }
   const activeChannelMessages = messages.filter(
     (message) => message.channelId === currentChannelId,
   );
-
   const messagesView = useRef(null);
   useEffect(() => {
     messagesView.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth' });

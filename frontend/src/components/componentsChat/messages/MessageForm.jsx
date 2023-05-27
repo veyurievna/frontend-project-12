@@ -22,27 +22,27 @@ const MessageForm = ({ activeChannel }) => {
   useEffect(() => {
     messageRef.current.focus();
   }, []);
-
   const formik = useFormik({
-  initialValues: {
-    body: '',
-  },
-  validationSchema,
-  onSubmit: async (values) => {
-    const cleanedMessage = leoProfanity.clean(values.body);
-    const message = {
-      text: cleanedMessage,
-      channelId: activeChannel.id,
-      username: user.username,
-    };
-    try {
-      await chatApi.sendMessage(message);
-      formik.resetForm();
-    } catch (error) {
-      toast.error(t('toast.dataLoadingError'));
-    }
-  },
-});
+    initialValues: {
+      body: '',
+    },
+    onSubmit: async (values) => {
+      const cleanedMessage = leoProfanity.clean(values.body);
+      const message = {
+        text: cleanedMessage,
+        channelId: activeChannel.id,
+        username: user.username,
+      };
+      await chatApi.sendMessage(message)
+        .then(() => {
+          formik.resetForm();
+        })
+        .catch(() => {
+          toast.error(t('toast.dataLoadingError'));
+        });
+    },
+    validateOnChange: validationSchema,
+  });
 
   return (
     <div className="mt-auto px-5 py-3">

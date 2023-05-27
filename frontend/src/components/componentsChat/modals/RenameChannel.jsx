@@ -23,13 +23,13 @@ const validationChannelsSchema = (channels, text) => yup.object().shape({
 
 const Rename = ({ closeHandler, changed }) => {
   const { t } = useTranslation();
-  const refContainer = useRef(null);
+  const refContainer = useRef('');
   useEffect(() => {
     setTimeout(() => {
       refContainer.current.select();
     }, 1);
   }, []);
-  const chatApi = useChatApi() ? useChatApi() : null;
+  const chatApi = useChatApi();
 
   const allChannels = useSelector((state) => state.channelsInfo.channels);
   const channelsName = allChannels.map((channel) => channel.name);
@@ -43,16 +43,16 @@ const Rename = ({ closeHandler, changed }) => {
     onSubmit: async (values) => {
       const { name } = values;
       const cleanedName = leoProfanity.clean(name);
-      try {
-        await chatApi.renameChannel({ name: cleanedName, id: changed });
-        closeHandler();
-        toast.info(t('toast.renamedChannel'));
-      } catch (error) {
-        toast.error(t('toast.dataLoadingError'));
-      }
+      await chatApi.renameChannel({ name: cleanedName, id: changed })
+        .then(() => {
+          closeHandler();
+          toast.info(t('toast.renamedChannel'));
+        })
+        .catch(() => {
+          toast.error(t('toast.dataLoadingError'));
+        });
     },
   });
-  
   return (
     <>
       <Modal.Header closeButton>
