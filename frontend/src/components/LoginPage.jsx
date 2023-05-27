@@ -12,6 +12,10 @@ import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
 
+const handleAuthError = ({ formik, setAuthFailed, inputRef }) => {
+  setAuthFailed(true);
+};
+
 const LoginPage = () => {
   const { t } = useTranslation();
   const auth = useAuth();
@@ -49,13 +53,13 @@ const LoginPage = () => {
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from);
       } catch (err) {
-        handleAuthError(err, { formik, setAuthFailed, inputRef });
+        handleAuthError({ formik, setAuthFailed, inputRef });
       } finally {
         setSubmitting(false);
       }
     },
   });
-
+  
   return (
     <Container className="h-100" fluid>
       <Row className="justify-content-center align-content-center h-100">
