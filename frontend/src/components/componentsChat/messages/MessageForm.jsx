@@ -16,7 +16,7 @@ const MessageForm = ({ activeChannel }) => {
   const { t } = useTranslation();
 
   const validationSchema = yup.object().shape({
-    message: yup.string().trim().required('Required'),
+    body: yup.string().trim().required('Required'),
   });
 
   useEffect(() => {
@@ -40,7 +40,6 @@ const MessageForm = ({ activeChannel }) => {
         toast.error(t('toast.dataLoadingError'));
       }
     },
-    validateOnChange: validationSchema,
   });
 
   return (
@@ -63,10 +62,9 @@ const MessageForm = ({ activeChannel }) => {
           />
           <Button
             style={{ border: 'none' }}
-            variant="group-vertical"
+            variant="primary"
             type="submit"
-            disabled={formik.isSubmitting || !formik.values.body}
-            onClick={formik.handleSubmit}
+            disabled={formik.isSubmitting || !formik.isValid || !formik.values.body}
           >
             <ArrowRightSquare size={20} />
             <span className="visually-hidden">{t('send')}</span>
