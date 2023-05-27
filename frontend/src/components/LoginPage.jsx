@@ -19,24 +19,24 @@ const LoginPage = () => {
   const inputRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
+
   useEffect(() => {
-    inputRef.current.focus();
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   }, []);
+
+  const validationSchema = Yup.object({
+    username: Yup.string().typeError(t('required')).required(t('required')),
+    password: Yup.string().typeError(t('required')).required(t('required')),
+  });
 
   const formik = useFormik({
     initialValues: {
       username: '',
       password: '',
     },
-    validationSchema: Yup.object({
-      username: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-      password: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-    }),
-
+    validationSchema,
     onSubmit: async (values) => {
       setAuthFailed(false);
       try {
