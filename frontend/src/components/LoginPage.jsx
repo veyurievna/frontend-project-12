@@ -26,7 +26,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (inputRef && inputRef.current) {
-      inputRef.current.focus(); 
+      inputRef.current.focus();
     }
   }, []);
 
@@ -59,7 +59,6 @@ const LoginPage = () => {
       }
     },
   });
-  
   return (
     <Container className="h-100" fluid>
       <Row className="justify-content-center align-content-center h-100">
