@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/semenChe/frontend-project-12.git"
+    "url": "git+https://github.com/veyurievna/frontend-project-12.git"
   },
-  "author": "semenChe",
+  "author": "Vasilieva Ekaterina",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/semenChe/frontend-project-12/issues"
+    "url": "https://github.com/veyurievna/frontend-project-12/issues"
   },
-  "homepage": "https://github.com/semenChe/frontend-project-12#readme",
+  "homepage": "https://github.com/veyurievna/frontend-project-12#readme",
   "dependencies": {
     "@hexlet/chat-server": "^1.1.6"
   }
