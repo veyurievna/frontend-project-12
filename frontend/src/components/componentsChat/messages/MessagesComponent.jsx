@@ -14,9 +14,13 @@ const MessagesComponent = () => {
   const [activeChannel] = channels.find(
     ({ id }) => id === currentChannelId,
   );
+  if (!activeChannel) {
+    return null;
+  }
   const activeChannelMessages = messages.filter(
     (message) => message.channelId === currentChannelId,
   );
+
   const messagesView = useRef(null);
   useEffect(() => {
     messagesView.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth' });

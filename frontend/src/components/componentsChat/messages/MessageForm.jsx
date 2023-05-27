@@ -16,31 +16,33 @@ const MessageForm = ({ activeChannel }) => {
   const { t } = useTranslation();
 
   const validationSchema = yup.object().shape({
-    body: yup.string().trim().required('Required'),
+    message: yup.string().trim().required('Required'),
   });
 
   useEffect(() => {
     messageRef.current.focus();
   }, []);
+
   const formik = useFormik({
-    initialValues: {
-      body: '',
-    },
-    onSubmit: async (values) => {
-      const cleanedMessage = leoProfanity.clean(values.body);
-      const message = {
-        text: cleanedMessage,
-        channelId: activeChannel.id,
-        username: user.username,
-      };
-      try {
-        await chatApi.sendMessage(message);
-        formik.resetForm();
-      } catch (error) {
-        toast.error(t('toast.dataLoadingError'));
-      }
-    },
-  });
+  initialValues: {
+    body: '',
+  },
+  validationSchema,
+  onSubmit: async (values) => {
+    const cleanedMessage = leoProfanity.clean(values.body);
+    const message = {
+      text: cleanedMessage,
+      channelId: activeChannel.id,
+      username: user.username,
+    };
+    try {
+      await chatApi.sendMessage(message);
+      formik.resetForm();
+    } catch (error) {
+      toast.error(t('toast.dataLoadingError'));
+    }
+  },
+});
 
   return (
     <div className="mt-auto px-5 py-3">
@@ -62,9 +64,10 @@ const MessageForm = ({ activeChannel }) => {
           />
           <Button
             style={{ border: 'none' }}
-            variant="primary"
+            variant="group-vertical"
             type="submit"
-            disabled={formik.isSubmitting || !formik.isValid || !formik.values.body}
+            disabled={formik.isSubmitting || !formik.values.body}
+            onClick={formik.handleSubmit}
           >
             <ArrowRightSquare size={20} />
             <span className="visually-hidden">{t('send')}</span>
