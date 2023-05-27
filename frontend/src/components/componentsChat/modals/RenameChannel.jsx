@@ -23,12 +23,15 @@ const validationChannelsSchema = (channels, text) => yup.object().shape({
 
 const Rename = ({ closeHandler, changed }) => {
   const { t } = useTranslation();
-  const refContainer = useRef('');
+  const refContainer = useRef();
   useEffect(() => {
-    setTimeout(() => {
+  setTimeout(() => {
+    if (refContainer.current) {
       refContainer.current.select();
-    }, 1);
-  }, []);
+    }
+  }, 1);
+}, []);
+
   const chatApi = useChatApi();
 
   const allChannels = useSelector((state) => state.channelsInfo.channels);
@@ -43,14 +46,13 @@ const Rename = ({ closeHandler, changed }) => {
     onSubmit: async (values) => {
       const { name } = values;
       const cleanedName = leoProfanity.clean(name);
-      await chatApi.renameChannel({ name: cleanedName, id: changed })
-        .then(() => {
-          closeHandler();
-          toast.info(t('toast.renamedChannel'));
-        })
-        .catch(() => {
-          toast.error(t('toast.dataLoadingError'));
-        });
+      try {
+        await chatApi.renameChannel({ name: cleanedName, id: changed });
+        closeHandler();
+        toast.info(t('toast.renamedChannel'));
+      } catch {
+        toast.error(t('toast.dataLoadingError'));
+      }
     },
   });
   return (

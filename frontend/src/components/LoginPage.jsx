@@ -21,22 +21,19 @@ const LoginPage = () => {
   const navigate = useNavigate();
   useEffect(() => {
     inputRef.current.focus();
-  }, []);
+  }, [massages]);
 
+  const loginValidationSchema = Yup.object().shape({
+    username: Yup.string().typeError(t('required')).required(t('required')),
+    password: Yup.string().typeError(t('required')).required(t('required')),
+  });
+  
   const formik = useFormik({
     initialValues: {
       username: '',
       password: '',
     },
-    validationSchema: Yup.object({
-      username: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-      password: Yup.string()
-        .typeError(t('required'))
-        .required(t('required')),
-    }),
-
+    validationSchema: loginValidationSchema,
     onSubmit: async (values) => {
       setAuthFailed(false);
       try {
