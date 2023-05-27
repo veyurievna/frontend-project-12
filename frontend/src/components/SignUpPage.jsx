@@ -27,7 +27,8 @@ const SignUp = () => {
   const location = useLocation();
   const usernameRef = useRef(null);
   const [failedRegistration, setFailedRegistration] = useState(false);
-  const [submited, setSubmited] = useState(false);
+  const [isSubmitting] = useState(false);
+
 
   useEffect(() => {
     usernameRef.current.focus();
@@ -55,10 +56,11 @@ const SignUp = () => {
         (password, context) => password === context.parent.password,
       ),
   });
-
-const handleSubmit = async (values) => {
+  
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setSubmitting(true);
     setFailedRegistration(false);
-    setSubmited(true);
+  
     try {
       const { username, password } = values;
       const { data } = await axios.post(getRoutes.signupPath(), { username, password });
@@ -73,7 +75,7 @@ const handleSubmit = async (values) => {
         return;
       }
     }
-    setSubmited(false);
+    setSubmitting(false);
   };
 
   const formik = useFormik({
@@ -110,7 +112,7 @@ const handleSubmit = async (values) => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmitting}
                     isInvalid={
                       (formik.errors.username && formik.touched.username)
                       || failedRegistration
@@ -135,7 +137,7 @@ const handleSubmit = async (values) => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmitting}
                     isInvalid={
                       (formik.errors.password && formik.touched.password)
                       || failedRegistration
@@ -158,7 +160,7 @@ const handleSubmit = async (values) => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={submited}
+                    disabled={isSubmitting}
                     isInvalid={
                       (formik.errors.confirmPassword
                         && formik.touched.confirmPassword)
