@@ -12,10 +12,6 @@ import { useAuth } from '../hooks/hooks.js';
 import getRoutes from '../routes.js';
 import imagePath from '../assets/avatar.jpg';
 
-const handleAuthError = ({ setAuthFailed }) => {
-  setAuthFailed(true);
-};
-
 const LoginPage = () => {
   const { t } = useTranslation();
   const auth = useAuth();
@@ -23,11 +19,8 @@ const LoginPage = () => {
   const inputRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
-
   useEffect(() => {
-    if (inputRef && inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current.focus();
   }, []);
 
   const formik = useFormik({
@@ -44,7 +37,7 @@ const LoginPage = () => {
         .required(t('required')),
     }),
 
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values) => {
       setAuthFailed(false);
       try {
         const res = await axios.post(getRoutes.loginPath(), values);
@@ -53,12 +46,17 @@ const LoginPage = () => {
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from);
       } catch (err) {
-        handleAuthError({ setAuthFailed });
-      } finally {
-        setSubmitting(false);
+        formik.setSubmitting(false);
+        if (err.isAxiosError && err.response.status === 401) {
+          setAuthFailed(true);
+          inputRef.current.select();
+          return;
+        }
+        throw err;
       }
     },
   });
+
   return (
     <Container className="h-100" fluid>
       <Row className="justify-content-center align-content-center h-100">

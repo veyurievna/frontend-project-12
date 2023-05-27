@@ -21,19 +21,16 @@ import getRoutes from '../routes.js';
 import { useAuth } from '../hooks/hooks.js';
 
 const SignUp = () => {
+  const [failedRegistration, setFailedRegistration] = useState(false);
+  const [submited, setSubmited] = useState(false);
   const { t } = useTranslation();
-  const { logIn } = useAuth();
+  const usernameRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const usernameRef = useRef(null);
-  const [failedRegistration, setFailedRegistration] = useState(false);
-  const [isSubmitting] = useState(false);
-
-
+  const { logIn } = useAuth();
   useEffect(() => {
     usernameRef.current.focus();
   }, []);
-
   const registrationValidation = yup.object().shape({
     username: yup
       .string()
@@ -56,27 +53,6 @@ const SignUp = () => {
         (password, context) => password === context.parent.password,
       ),
   });
-  
-  const handleSubmit = async (values, { setSubmitting }) => {
-    setSubmitting(true);
-    setFailedRegistration(false);
-  
-    try {
-      const { username, password } = values;
-      const { data } = await axios.post(getRoutes.signupPath(), { username, password });
-      localStorage.setItem('userId', JSON.stringify(data));
-      logIn(data);
-      const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
-      navigate(from);
-    } catch (err) {
-      if (err.response.status === 409) {
-        setFailedRegistration(true);
-        usernameRef.current.select();
-        return;
-      }
-    }
-    setSubmitting(false);
-  };
 
   const formik = useFormik({
     initialValues: {
@@ -85,7 +61,26 @@ const SignUp = () => {
       confirmPassword: '',
     },
     validationSchema: registrationValidation,
-    onSubmit: handleSubmit,
+    onSubmit: async (values) => {
+      setFailedRegistration(false);
+      setSubmited(true);
+      try {
+        const { username, password } = values;
+        const { data } = await axios.post(getRoutes.signupPath(), { username, password });
+        localStorage.setItem('userId', JSON.stringify(data));
+        logIn(data);
+        const { from } = location.state || { from: { pathname: getRoutes.chatPagePath() } };
+        navigate(from);
+      } catch (err) {
+        if (err.response.status === 409) {
+          setFailedRegistration(true);
+          usernameRef.current.select();
+          return;
+        }
+        throw err;
+      }
+      setSubmited(false);
+    },
   });
 
   return (
@@ -112,7 +107,7 @@ const SignUp = () => {
                     value={formik.values.username}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.username && formik.touched.username)
                       || failedRegistration
@@ -137,7 +132,7 @@ const SignUp = () => {
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.password && formik.touched.password)
                       || failedRegistration
@@ -160,7 +155,7 @@ const SignUp = () => {
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    disabled={isSubmitting}
+                    disabled={submited}
                     isInvalid={
                       (formik.errors.confirmPassword
                         && formik.touched.confirmPassword)
