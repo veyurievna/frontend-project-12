@@ -10,15 +10,15 @@ const Remove = ({ closeHandler, changed }) => {
   const chatApi = useChatApi();
   const deleteChannel = async (e) => {
     e.preventDefault();
-    await chatApi.removeChannel(changed)
-      .then(() => {
-        closeHandler();
-        toast.warn(t('toast.removeChannel'));
-      })
-      .catch(() => {
-        toast.error(t('toast.dataLoadingError'));
-      });
+    try {
+      await chatApi.removeChannel(changed);
+      closeHandler();
+      toast.warn(t('toast.removeChannel'));
+    } catch (error) {
+      toast.error(t('toast.dataLoadingError'));
+    }
   };
+  
   return (
     <>
       <Modal.Header closeButton>

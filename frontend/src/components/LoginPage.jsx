@@ -20,7 +20,9 @@ const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
-    inputRef.current.focus();
+    if (inputRef.current !== null) {
+      inputRef.current.focus();
+    }
   }, []);
 
   const formik = useFormik({
